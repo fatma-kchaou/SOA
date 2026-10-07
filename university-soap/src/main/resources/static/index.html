@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>University SOAP</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #ccc;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #eee;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🎓 University SOAP</h1>
+
+<div class="card">
+
+    <h2>Rechercher un étudiant</h2>
+
+    <input
+        type="number"
+        id="studentId"
+        placeholder="ID étudiant"
+        value="1"
+    >
+
+    <button onclick="getStudent()">
+        Rechercher
+    </button>
+
+</div>
+
+<div class="card">
+
+    <h2>Ajouter un étudiant</h2>
+
+    <input
+        type="text"
+        id="firstName"
+        placeholder="Prénom"
+    >
+
+    <input
+        type="text"
+        id="lastName"
+        placeholder="Nom"
+    >
+
+    <input
+        type="email"
+        id="email"
+        placeholder="Email"
+    >
+
+    <button onclick="addStudent()">
+        Ajouter
+    </button>
+
+</div>
+
+<div class="card">
+
+    <h2>Résultat</h2>
+
+    <div id="result">
+        Aucun résultat.
+    </div>
+
+</div>
+
+<script>
+
+const SOAP_URL = "http://localhost:8082/ws";
+
+async function getStudent() {
+
+    const id = document.getElementById("studentId").value;
+
+    const xml = `
+        <soapenv:Envelope
+            xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+            xmlns:stu="http://example.com/university/student">
+
+            <soapenv:Header/>
+
+            <soapenv:Body>
+
+                <stu:getStudentRequest>
+                    <stu:id>${id}</stu:id>
+                </stu:getStudentRequest>
+
+            </soapenv:Body>
+
+        </soapenv:Envelope>
+    `;
+
+    sendSoapRequest(xml);
+}
+
+
+async function addStudent() {
+
+    const firstName =
+        document.getElementById("firstName").value;
+
+    const lastName =
+        document.getElementById("lastName").value;
+
+    const email =
+        document.getElementById("email").value;
+
+    const xml = `
+        <soapenv:Envelope
+            xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+            xmlns:stu="http://example.com/university/student">
+
+            <soapenv:Header/>
+
+            <soapenv:Body>
+
+                <stu:addStudentRequest>
+
+                    <stu:firstName>${firstName}</stu:firstName>
+
+                    <stu:lastName>${lastName}</stu:lastName>
+
+                    <stu:email>${email}</stu:email>
+
+                </stu:addStudentRequest>
+
+            </soapenv:Body>
+
+        </soapenv:Envelope>
+    `;
+
+    sendSoapRequest(xml);
+}
+
+
+async function sendSoapRequest(xml) {
+
+    const result =
+        document.getElementById("result");
+
+    result.textContent = "Chargement...";
+
+    try {
+
+        const response = await fetch(
+            SOAP_URL,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "text/xml;charset=UTF-8"
+                },
+
+                body: xml
+            }
+        );
+
+        const data = await response.text();
+
+        result.textContent = data;
+
+    } catch (error) {
+
+        result.textContent =
+            "Erreur : " + error.message;
+    }
+}
+
+</script>
+
+</body>
+</html>
